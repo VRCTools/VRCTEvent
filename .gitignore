@@ -62,3 +62,14 @@ crashlytics-build.properties
 Assets/PackageMakerWindowData.asset*
 .idea
 .vscode
+
+# Ignore auto-generated assets
+Assets/
+
+# Ignore ClientSim data
+ClientSimStorage
+ClientSimStorage.meta
+
+# Ignore additional user settings
+UserSettings/EditorUserSettings.asset
+UserSettings/layouts
