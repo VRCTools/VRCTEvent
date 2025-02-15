@@ -1,76 +1,99 @@
-# VPM Package Template
+# VRCTools Event System
 
-Starter for making Packages, including automation for building and publishing them.
+This package provides a very simple event system for Udon# scripts letting your scripts publish or receive updates
+from other components within a scene.
 
-Once you're all set up, you'll be able to push changes to this repository and have .zip and .unitypackage versions automatically generated, and a listing made which works in the VPM for delivering updates for this package. If you want to make a listing with a variety of packages, check out our [template-package-listing](https://github.com/vrchat-community/template-package-listing) repo.
+Handlers may be (un-)registered dynamically as state becomes relevant or objects are created/destroyed.
 
-## ▶ Getting Started
+**Important:** This package on its own is useless. If you do not intend to write your own scripts using this library,
+you likely don't need to install it yourself. Some VRCTools or third party packages may depend on it. If you are
+installing via Creator Companion or an equivalent package manager, it should be installed automatically when
+needed. If you are installing packages manually, refer to the documentation of the package or asset you are trying
+to install.
 
-* Press [![Use This Template](https://user-images.githubusercontent.com/737888/185467681-e5fdb099-d99f-454b-8d9e-0760e5a6e588.png)](https://github.com/vrchat-community/template-package/generate)
-to start a new GitHub project based on this template.
-  * Choose a fitting repository name and description.
-  * Set the visibility to 'Public'. You can also choose 'Private' and change it later.
-  * You don't need to select 'Include all branches.'
-* Clone this repository locally using Git.
-  * If you're unfamiliar with Git and GitHub, [visit GitHub's documentation](https://docs.github.com/en/get-started/quickstart/git-and-github-learning-resources) to learn more.
-* Add the folder to Unity Hub and open it as a Unity Project.
-* After opening the project, wait while the VPM resolver is downloaded and added to your project.
-  * This gives you access to the VPM Package Maker and Package Resolver tools.
+## Installation
 
-## 🚇 Migrating Assets Package
-Full details at [Converting Assets to a VPM Package](https://vcc.docs.vrchat.com/guides/convert-unitypackage)
+The preferred way for installation is to use Creator Companion or an equivalent package management tool. Our
+repository can be found at https://vrctools.github.io/vpm and will guide you through adding the repository to
+your package manager.
 
-## ✏️ Working on Your Package
+If you wish to install the package manually, you can find the most recent build over in the [Releases][Releases]
+section. Simply drag the package onto Unity or select the file manually
+via `Assets -> Import Package -> Custom Package`
 
-* Delete the "Packages/com.vrchat.demo-template" directory or reuse it for your own package.
-  * If you reuse the package, don't forget to rename it and add generated meta files to your repository!
-* Update the `.gitignore` file in the "Packages" directory to include your package.
-  * For example, change `!com.vrchat.demo-template` to `!com.username.package-name`.
-  * `.gitignore` files normally *exclude* the contents of your "Packages" directory. This `.gitignore` in this template show how to *include* the demo package. You can easily change this out for your own package name.
-* Open the Unity project and work on your package's files in your favorite code editor.
-* When you're ready, commit and push your changes.
-* Once you've set up the automation as described below, you can easily publish new versions.
+## Usage
 
-## 🤖 Setting up the Automation
+To create an event emitter (e.g. an Udon# script which generates an arbitrary number of events which others may
+listen to), you need to extend `AbstractEventEmitter` from the `VRCTools.Event` namespace:
 
-Create a repository variable with the name and value described below.
-For details on how to create repository variables, see [Creating Configuration Variables for a Repository](https://docs.github.com/en/actions/learn-github-actions/variables#creating-configuration-variables-for-a-repository).
-Make sure you are creating a **repository variable**, and not a **repository secret**.
+```C#
+import VRCTools.Event;
 
-* `PACKAGE_NAME`: the name of your package, like `com.vrchat.demo-template`.
+class MyEventEmitter : AbstractEventEmitter {
+   public const int EVENT_A = 0;
+   public const int EVENT_B = 1;
+   public const int EVENT_COUNT = 2;
 
-Finally, go to the "Settings" page for your repo, then choose "Pages", and look for the heading "Build and deployment". Change the "Source" dropdown from "Deploy from a branch" to "GitHub Actions".
+   public override int EventCount => EVENT_COUNT;
 
-That's it!
-Some other notes:
-* We highly recommend you keep the existing folder structure of this template.
-  * The root of the project should be a Unity project.
-  * Your packages should be in the "Packages" directory.
-  * If you deviate from this folder structure, you'll need to update the paths that assume your package is in the "Packages" directory on lines 24, 38, 41 and 57.
-* If you want to store and generate your web files in a folder other than "Website" in the root, you can change the `listPublicDirectory` item [here in build-listing.yml](.github/workflows/build-listing.yml#L17).
+   // ...
 
-## 🎉 Publishing a Release
+   // for instance, if you want to emit an event whenever a player enters a trigger volume
+   public override void OnPlayerTriggerEnter(VRCPlayerApi player) {
+      this._EmitEvent(EVENT_A);
+   }
+}
+```
 
-You can make a release by running the [Build Release](.github/workflows/release.yml) action. The version specified in your `package.json` file will be used to define the version of the release.
+In order to subscribe to an event, you need to acquire a reference to the emitter and register yourself:
 
-## 📃 Rebuilding the Listing
+```C#
+class MyReceiver : UdonSharpBehaviour {
+   public MyEventEmitter emitter;
 
-Whenever you make a change to a release - manually publishing it, or manually creating, editing or deleting a release, the [Build Repo Listing](.github/workflows/build-listing.yml) action will make a new index of all the releases available, and publish them as a website hosted fore free on [GitHub Pages](https://pages.github.com/). This listing can be used by the VPM to keep your package up to date, and the generated index page can serve as a simple landing page with info for your package. The URL for your package will be in the format `https://username.github.io/repo-name`.
+   private void Start() {
+      this.emitter._RegisterHandler(MyEventEmitter.EVENT_A, this, nameof(this._OnEventA));
+   }
 
-## 🏠 Customizing the Landing Page (Optional)
+   // recommended to implement but technically purely optional if your object never gets destroyed
+   private void OnDestroy() {
+      this.emitter._UnregisterHandler(ExampleEventEmitter.EVENT_ONE, this, nameof(this._OnEvent));
+      // or alternatively
+      this.emitter._UnregisterHandler(this);
+   }
 
-The action which rebuilds the listing also publishes a landing page. The source for this page is in `Website/index.html`. The automation system uses [Scriban](https://github.com/scriban/scriban) to fill in the objects like `{{ this }}` with information from the latest release's manifest, so it will stay up-to-date with the name, id and description that you provide there. You are welcome to modify this page however you want - just use the existing `{{ template.objects }}` to fill in that info wherever you like. The entire contents of your "Website" folder are published to your GitHub Page each time.
+   // Important: Handler functions have to be declared as public in order to be invoked
+   public void _OnEventA() {
+      // do something
+   }
+}
+```
 
-## 💻 Technical Stuff
+Please note that these are heavily simplified usage examples.
+A set of full example scripts observing best practice may be found in `Packages/io.vrctools.event/Samples` (or
+`Packages/VRCTools - Event System/Samples` via the Unity Editor UI).
 
-You are welcome to make your own changes to the automation process to make it fit your needs, and you can create Pull Requests if you have some changes you think we should adopt. Here's some more info on the included automation:
+Please also note that all event emitters are implicitly implementations of `UdonSharpBehaviour` at the moment.
+This is due to limitations on the types and abstractions that Udon# can compile.
 
-### Build Release Action
-[release.yml](/.github/workflows/release.yml)
+## License
 
-This is a composite action combining a variety of existing GitHub Actions and some shell commands to create both a .zip of your Package and a .unitypackage. It creates a release which is named for the `version` in the `package.json` file found in your target Package, and publishes the zip, the unitypackage and the package.json file to this release.
+This project is released under the terms of the [Apache License, Version 2.0][License]. A copy of the full
+license text is included within the repository as well as all builds.
 
-### Build Repo Listing
-[build-listing.yml](.github/workflows/build-listing.yml)
+```
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This is a composite action which builds a vpm-compatible [Repo Listing](https://vcc.docs.vrchat.com/vpm/repos) based on the releases you've created. In order to find all your releases and combine them into a listing, it checks out [another repository](https://github.com/vrchat-community/package-list-action) which has a [Nuke](https://nuke.build/) project which includes the VPM core lib to have access to its types and methods. This project will be expanded to include more functionality in the future - for now, the action just calls its `BuildRepoListing` target.
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+```
+
+[Releases]: https://github.com/VRCTools/VRCTEvent/releases
+[License]: [https://www.apache.org/licenses/LICENSE-2.0.txt]
