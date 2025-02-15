@@ -1,5 +1,6 @@
 /*/
-!com.vrchat.core.*
 
+!com.vrchat.core.*
 !io.vrctools.event
-!com.vrchat.core.*/
+
+com.vrchat.core.vpm-resolver
