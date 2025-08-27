@@ -10,7 +10,7 @@
     "email": "contact@vrctools.io",
     "url": "https://vrctools.io"
   },
-  "dependencies": {
-    "com.vrchat.worlds": "3.7.0"
+  "vpmDependencies": {
+    "com.vrchat.worlds": "^3.7.0"
   }
 }
