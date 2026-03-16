@@ -11,13 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using System;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
+using VRCTools.Common.Utils;
 
 namespace VRCTools.Event {
-  
   /// <summary>
   /// Provides a basis for Udon behaviours which emit a set of custom events to a list of previously subscribed handler
   /// functions.
