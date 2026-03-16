@@ -47,7 +47,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.28",
+      "version": "3.0.39",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -224,6 +224,12 @@
         "com.unity.inputsystem": "1.2.0",
         "com.unity.ai.navigation": "1.1.5"
       }
+    },
+    "io.vrctools.common": {
+      "version": "file:io.vrctools.common",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
     },
     "io.vrctools.event": {
       "version": "file:io.vrctools.event",
