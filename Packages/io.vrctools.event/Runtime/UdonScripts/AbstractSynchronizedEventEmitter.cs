@@ -122,12 +122,15 @@ namespace VRCTools.Event {
 
       for (var i = 0; i < this._handlers.Length; i++) {
         var handlers = this._handlers[i];
+        var eventNames = this._eventNames[i];
 
         var removed = 0;
         for (var j = 0; j < handlers.Length; j++) {
           var handler = handlers[j];
+          var eventName = eventNames[j];
           if (Utilities.IsValid(handler)) {
             handlers[j - removed] = handler;
+            eventNames[j - removed] = eventName;
             continue;
           }
 
@@ -138,10 +141,14 @@ namespace VRCTools.Event {
           continue;
         }
 
-        var copy = new UdonSharpBehaviour[handlers.Length - removed];
-        Array.Copy(handlers, copy, copy.Length);
+        var handlerCopy = new UdonSharpBehaviour[handlers.Length - removed];
+        Array.Copy(handlers, handlerCopy, handlerCopy.Length);
+        
+        var eventNameCopy = new string[handlers.Length - removed];
+        Array.Copy(eventNames, eventNameCopy, eventNameCopy.Length);
 
-        this._handlers[i] = copy;
+        this._handlers[i] = handlerCopy;
+        this._eventNames[i] = eventNameCopy;
       }
     }
 
