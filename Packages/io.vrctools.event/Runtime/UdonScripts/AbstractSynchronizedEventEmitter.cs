@@ -21,8 +21,16 @@ using VRCTools.Common.Utils;
 
 namespace VRCTools.Event {
   /// <summary>
-  /// Provides a basis for Udon behaviours which emit a set of custom events to a list of previously subscribed handler
-  /// functions.
+  /// Provides a basis for synchronized Udon behaviours which emit a set of custom events to a list of previously
+  /// subscribed handler functions.
+  ///
+  /// Note: Events are not synchronized via the network. Handlers are only invoked on the client which calls
+  /// <see cref="_EmitEvent"/>. Only the state of the implementing behaviour is synchronized, as provided by
+  /// <see cref="AbstractSynchronizedBehaviour"/>. If remote clients should emit an event as well, emit it
+  /// within <c>OnDeserialization</c> or a similar callback.
+  ///
+  /// Implementors must call the base method of every lifecycle method they override (e.g. <c>Start</c>,
+  /// <c>Update</c>, <c>OnDeserialization</c> or <c>OnPostSerialization</c>).
   /// </summary>
   public abstract class AbstractSynchronizedEventEmitter : AbstractSynchronizedBehaviour {
     private bool _handlersInitialized;
@@ -218,9 +226,9 @@ namespace VRCTools.Event {
     /// <summary>
     /// Removes an existing event handler for the given eventId.
     /// </summary>
-    /// <param name="eventId"></param>
-    /// <param name="handler"></param>
-    /// <param name="eventName"></param>
+    /// <param name="eventId">an event identifier as specified by the emitter implementation</param>
+    /// <param name="handler">a previously registered handler instance</param>
+    /// <param name="eventName">the event method with which the handler has been registered</param>
     public void _UnregisterHandler(int eventId, UdonSharpBehaviour handler, string eventName) {
       // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
       // within this emitter yet
@@ -297,7 +305,7 @@ namespace VRCTools.Event {
     /// <summary>
     /// Emits an event for the given event id.
     /// </summary>
-    /// <param name="eventId">an event identifier </param>
+    /// <param name="eventId">an event identifier as specified by the emitter implementation</param>
     protected void _EmitEvent(int eventId) {
       // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
       // within this emitter yet

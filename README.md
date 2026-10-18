@@ -27,9 +27,12 @@ To create an event emitter (e.g. an Udon# script which generates an arbitrary nu
 listen to), you need to extend `AbstractEventEmitter` from the `VRCTools.Event` namespace:
 
 ```C#
-import VRCTools.Event;
+using UdonSharp;
+using VRC.SDKBase;
+using VRCTools.Event;
 
-class MyEventEmitter : AbstractEventEmitter {
+[UdonBehaviourSyncMode(BehaviourSyncMode.None)]
+public class MyEventEmitter : AbstractEventEmitter {
    public const int EVENT_A = 0;
    public const int EVENT_B = 1;
    public const int EVENT_COUNT = 2;
@@ -48,7 +51,10 @@ class MyEventEmitter : AbstractEventEmitter {
 In order to subscribe to an event, you need to acquire a reference to the emitter and register yourself:
 
 ```C#
-class MyReceiver : UdonSharpBehaviour {
+using UdonSharp;
+using VRC.SDKBase;
+
+public class MyReceiver : UdonSharpBehaviour {
    public MyEventEmitter emitter;
 
    private void Start() {
@@ -57,8 +63,11 @@ class MyReceiver : UdonSharpBehaviour {
 
    // recommended to implement but technically purely optional if your object never gets destroyed
    private void OnDestroy() {
-      this.emitter._UnregisterHandler(ExampleEventEmitter.EVENT_ONE, this, nameof(this._OnEvent));
-      // or alternatively
+      // the emitter may have been destroyed before this object (e.g. during scene teardown)
+      if (!Utilities.IsValid(this.emitter)) return;
+
+      this.emitter._UnregisterHandler(MyEventEmitter.EVENT_A, this, nameof(this._OnEventA));
+      // or alternatively, to remove this object from all events at once
       this.emitter._UnregisterHandler(this);
    }
 
@@ -72,6 +81,10 @@ class MyReceiver : UdonSharpBehaviour {
 Please note that these are heavily simplified usage examples.
 A set of full example scripts observing best practice may be found in `Packages/io.vrctools.event/Samples` (or
 `Packages/VRCTools - Event System/Samples` via the Unity Editor UI).
+
+Please note that handlers cannot be registered or unregistered while the emitter is invoking handlers (e.g. from
+within a handler function). Such calls are rejected with an error. Use `IsUpdatingHandlers` to check for this
+condition if necessary.
 
 Please also note that all event emitters are implicitly implementations of `UdonSharpBehaviour` at the moment.
 This is due to limitations on the types and abstractions that Udon# can compile.
@@ -96,4 +109,4 @@ limitations under the License.
 ```
 
 [Releases]: https://github.com/VRCTools/VRCTEvent/releases
-[License]: [https://www.apache.org/licenses/LICENSE-2.0.txt]
+[License]: https://www.apache.org/licenses/LICENSE-2.0.txt

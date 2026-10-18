@@ -1,4 +1,4 @@
-﻿// Copyright 2025 .start <https://dotstart.tv>
+﻿// Copyright 2025-2026 .start <https://dotstart.tv>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -217,9 +217,9 @@ namespace VRCTools.Event {
     /// <summary>
     /// Removes an existing event handler for the given eventId.
     /// </summary>
-    /// <param name="eventId"></param>
-    /// <param name="handler"></param>
-    /// <param name="eventName"></param>
+    /// <param name="eventId">an event identifier as specified by the emitter implementation</param>
+    /// <param name="handler">a previously registered handler instance</param>
+    /// <param name="eventName">the event method with which the handler has been registered</param>
     public void _UnregisterHandler(int eventId, UdonSharpBehaviour handler, string eventName) {
       // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
       // within this emitter yet
@@ -296,7 +296,7 @@ namespace VRCTools.Event {
     /// <summary>
     /// Emits an event for the given event id.
     /// </summary>
-    /// <param name="eventId">an event identifier </param>
+    /// <param name="eventId">an event identifier as specified by the emitter implementation</param>
     protected void _EmitEvent(int eventId) {
       // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
       // within this emitter yet
