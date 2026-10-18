@@ -169,17 +169,17 @@ namespace VRCTools.Event {
         return;
       }
       
-      if (this.EventStackIndex > 0) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to un-register handler {handler.name}#* while event handler update is in progress",
-          handler);
-        return;
-      }
-      
       // deliberately skipping full validity check as the object may have gone out of scope but should still be removed
       // from our handler list
       if (handler == null) {
         Debug.LogError("[Event Emitter] Attempted to unregister invalid handler from all event slots", this);
+        return;
+      }
+      
+      if (this.EventStackIndex > 0) {
+        Debug.LogError(
+          $"[Event Emitter] Attempted to un-register handler {handler.name}#* while event handler update is in progress",
+          handler);
         return;
       }
 
