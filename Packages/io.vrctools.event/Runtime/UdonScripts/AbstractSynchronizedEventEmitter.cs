@@ -299,7 +299,7 @@ namespace VRCTools.Event {
 
           if (!Utilities.IsValid(handler)) {
             Debug.LogWarning(
-              $"[Event Emitter] Stale reference to event handler {handler.name}#{eventName} for event {eventId} - Skipped",
+              $"[Event Emitter] Stale reference to event handler ???#{eventName} for event {eventId} - Skipped",
               this);
             continue;
           }
