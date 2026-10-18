@@ -74,9 +74,6 @@ namespace VRCTools.Event {
     /// <param name="handler">an arbitrary Udon object which shall receive updates</param>
     /// <param name="eventName">an arbitrary event method which shall receive updates</param>
     public void _RegisterHandler(int eventId, UdonSharpBehaviour handler, string eventName) {
-      this._InitializeHandlers();
-      this._CleanupHandlers();
-
       if (!Utilities.IsValid(handler)) {
         Debug.LogError($"[Event Emitter] Attempted to register invalid handler with event slot {eventId}", this);
         return;
@@ -102,6 +99,9 @@ namespace VRCTools.Event {
           handler);
         return;
       }
+      
+      this._InitializeHandlers();
+      this._CleanupHandlers();
 
       var handlerList = this._handlers[eventId];
       var eventNames = this._eventNames[eventId];
@@ -157,6 +157,13 @@ namespace VRCTools.Event {
     /// </summary>
     /// <param name="handler">a handler instance</param>
     public void _UnregisterHandler(UdonSharpBehaviour handler) {
+      if (this.EventStackIndex > 0) {
+        Debug.LogError(
+          $"[Event Emitter] Attempted to un-register handler {handler.name}#* while event handler update is in progress",
+          handler);
+        return;
+      }
+      
       // deliberately skipping full validity check as the object may have gone out of scope but should still be removed
       // from our handler list
       if (handler == null) {
