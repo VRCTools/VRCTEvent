@@ -120,6 +120,12 @@ namespace VRCTools.Event {
         return;
       }
 
+      if (this.EventStackIndex > 0) {
+        Debug.LogError(
+          $"[Event Emitter] Attempted to cleanup handlers while event handler update is in progress", this);
+        return;
+      }
+
       for (var i = 0; i < this._handlers.Length; i++) {
         var handlers = this._handlers[i];
         var eventNames = this._eventNames[i];
