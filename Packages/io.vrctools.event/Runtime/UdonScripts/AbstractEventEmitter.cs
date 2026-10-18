@@ -136,7 +136,7 @@ namespace VRCTools.Event {
           removed++;
         }
 
-        if (removed < 0) {
+        if (removed == 0) {
           continue;
         }
 
