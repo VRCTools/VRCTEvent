@@ -157,6 +157,12 @@ namespace VRCTools.Event {
     /// </summary>
     /// <param name="handler">a handler instance</param>
     public void _UnregisterHandler(UdonSharpBehaviour handler) {
+      // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
+      // within this emitter yet
+      if (!this._handlersInitialized) {
+        return;
+      }
+      
       if (this.EventStackIndex > 0) {
         Debug.LogError(
           $"[Event Emitter] Attempted to un-register handler {handler.name}#* while event handler update is in progress",
