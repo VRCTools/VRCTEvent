@@ -216,8 +216,6 @@ namespace VRCTools.Event {
         return;
       }
 
-      this._CleanupHandlers();
-
       // deliberately skipping full validity check as the object may have gone out of scope but should still be removed
       // from our handler list
       if (handler == null) {
@@ -238,6 +236,15 @@ namespace VRCTools.Event {
           handler);
         return;
       }
+
+      if (this.EventStackIndex > 0) {
+        Debug.LogError(
+          $"[Event Emitter] Attempted to un-register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress",
+          handler);
+        return;
+      }
+
+      this._CleanupHandlers();
 
       var handlerList = this._handlers[eventId];
       var eventNames = this._eventNames[eventId];
