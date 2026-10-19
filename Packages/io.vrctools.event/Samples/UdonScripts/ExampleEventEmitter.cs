@@ -11,19 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using UdonSharp;
 
-namespace VRCTools.Event.Samples {
+namespace VRCTools.Event.Samples
+{
   [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
-  public sealed class ExampleEventEmitter : AbstractEventEmitter {
+  public sealed class ExampleEventEmitter : AbstractEventEmitter
+  {
     public const int EVENT_ONE = 0;
     public const int EVENT_TWO = 1;
     public const int EVENT_COUNT = 2;
 
     public override int EventCount => EVENT_COUNT;
 
-    public void _TriggerEventOne() { this._EmitEvent(EVENT_ONE); }
+    public void _TriggerEventOne()
+    {
+      this._EmitEvent(EVENT_ONE);
+    }
 
-    public void _TriggerEventTwo() { this._EmitEvent(EVENT_TWO); }
+    public void _TriggerEventTwo()
+    {
+      this._EmitEvent(EVENT_TWO);
+    }
   }
 }

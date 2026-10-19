@@ -11,26 +11,30 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 using TMPro;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
 using VRCTools.Common.Attributes;
 
-namespace VRCTools.Event.Samples {
+namespace VRCTools.Event.Samples
+{
   [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
   [RequireComponent(typeof(TextMeshProUGUI))]
-  public sealed class ExampleEventReceiver : UdonSharpBehaviour {
+  public sealed class ExampleEventReceiver : UdonSharpBehaviour
+  {
     public ExampleEventEmitter emitter;
 
-    [Range(1, 2)]
-    public int eventIndex = 1;
+    [Range(1, 2)] public int eventIndex = 1;
 
     private TextMeshProUGUI _text;
     private int _eventCount;
 
-    private void Start() {
-      if (!Utilities.IsValid(this.emitter)) {
+    private void Start()
+    {
+      if (!Utilities.IsValid(this.emitter))
+      {
         Debug.LogError("[ExampleEventReceiver] Invalid emitter reference - Disabled");
         this.enabled = false;
         return;
@@ -38,7 +42,8 @@ namespace VRCTools.Event.Samples {
 
       this._text = this.GetComponent<TextMeshProUGUI>();
 
-      switch (this.eventIndex) {
+      switch (this.eventIndex)
+      {
         case 1:
           this.emitter._RegisterHandler(ExampleEventEmitter.EVENT_ONE, this, nameof(this._OnEvent));
           break;
@@ -52,8 +57,10 @@ namespace VRCTools.Event.Samples {
       }
     }
 
-    private void OnDestroy() {
-      switch (this.eventIndex) {
+    private void OnDestroy()
+    {
+      switch (this.eventIndex)
+      {
         case 1:
           this.emitter._UnregisterHandler(ExampleEventEmitter.EVENT_ONE, this, nameof(this._OnEvent));
           break;
@@ -73,7 +80,8 @@ namespace VRCTools.Event.Samples {
     /// invocation via the network.
     /// </summary>
     [CustomEvent]
-    public void _OnEvent() {
+    public void _OnEvent()
+    {
       this._eventCount++;
       this._text.text = this._eventCount.ToString();
     }
