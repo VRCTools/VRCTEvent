@@ -14,7 +14,6 @@
 
 using System;
 using UdonSharp;
-using UnityEngine;
 using VRC.SDKBase;
 using VRCTools.Common.Utils;
 
@@ -74,28 +73,22 @@ namespace VRCTools.Event {
     /// <param name="eventName">an arbitrary event method which shall receive updates</param>
     public void _RegisterHandler(int eventId, UdonSharpBehaviour handler, string eventName) {
       if (!Utilities.IsValid(handler)) {
-        Debug.LogError($"[Event Emitter] Attempted to register invalid handler with event slot {eventId}", this);
+        UdonDebug.Error(this, $"Attempted to register invalid handler with event slot {eventId}");
         return;
       }
 
       if (eventId < 0 || eventId >= this.EventCount) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to register invalid event slot {eventId} with handler {handler.name}#{eventName}",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to register invalid event slot {eventId} with handler {handler.name}#{eventName}");
         return;
       }
 
       if (string.IsNullOrEmpty(eventName)) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to register invalid handler for event slot {eventId} with handler {handler.name}",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to register invalid handler for event slot {eventId} with handler {handler.name}");
         return;
       }
 
       if (this.EventStackIndex > 0) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress");
         return;
       }
       
@@ -120,8 +113,7 @@ namespace VRCTools.Event {
       }
 
       if (this.EventStackIndex > 0) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to cleanup handlers while event handler update is in progress", this);
+        UdonDebug.Error(this, "Attempted to cleanup handlers while event handler update is in progress");
         return;
       }
 
@@ -171,14 +163,12 @@ namespace VRCTools.Event {
       // deliberately skipping full validity check as the object may have gone out of scope but should still be removed
       // from our handler list
       if (handler == null) {
-        Debug.LogError("[Event Emitter] Attempted to unregister invalid handler from all event slots", this);
+        UdonDebug.Error(this, "Attempted to unregister invalid handler from all event slots");
         return;
       }
       
       if (this.EventStackIndex > 0) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to un-register handler {handler.name}#* while event handler update is in progress",
-          handler);
+        UdonDebug.Error(this, $"Attempted to un-register handler {handler.name}#* while event handler update is in progress");
         return;
       }
 
@@ -230,28 +220,22 @@ namespace VRCTools.Event {
       // deliberately skipping full validity check as the object may have gone out of scope but should still be removed
       // from our handler list
       if (handler == null) {
-        Debug.LogError($"[Event Emitter] Attempted to unregister invalid handler with event slot {eventId}", this);
+        UdonDebug.Error(this, $"Attempted to unregister invalid handler with event slot {eventId}");
         return;
       }
 
       if (eventId < 0 || eventId >= this.EventCount) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to unregister invalid event slot {eventId} with handler {handler.name}#{eventName}",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to unregister invalid event slot {eventId} with handler {handler.name}#{eventName}");
         return;
       }
 
       if (string.IsNullOrEmpty(eventName)) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to unregister invalid handler for event slot {eventId} with handler {handler.name}",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to unregister invalid handler for event slot {eventId} with handler {handler.name}");
         return;
       }
 
       if (this.EventStackIndex > 0) {
-        Debug.LogError(
-          $"[Event Emitter] Attempted to un-register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress",
-          handler);
+        UdonDebug.Error(handler, $"Attempted to un-register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress");
         return;
       }
 
@@ -305,7 +289,7 @@ namespace VRCTools.Event {
       }
 
       if (eventId < 0 || eventId >= this.EventCount) {
-        Debug.LogError($"[Event Emitter] Attempted to emit event with invalid id {eventId}", this);
+        UdonDebug.Error(this, $"Attempted to emit event with invalid id {eventId}");
         return;
       }
 
@@ -319,9 +303,7 @@ namespace VRCTools.Event {
           var eventName = eventNames[i];
 
           if (!Utilities.IsValid(handler)) {
-            Debug.LogWarning(
-              $"[Event Emitter] Stale reference to event handler ???#{eventName} for event {eventId} - Skipped",
-              this);
+            UdonDebug.Warn(this, $"Stale reference to event handler ???#{eventName} for event {eventId} - Skipped");
             continue;
           }
 

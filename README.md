@@ -53,6 +53,7 @@ In order to subscribe to an event, you need to acquire a reference to the emitte
 ```C#
 using UdonSharp;
 using VRC.SDKBase;
+using VRCTools.Common.Attributes;
 
 public class MyReceiver : UdonSharpBehaviour {
    public MyEventEmitter emitter;
@@ -72,6 +73,7 @@ public class MyReceiver : UdonSharpBehaviour {
    }
 
    // Important: Handler functions have to be declared as public in order to be invoked
+   [CustomEvent]
    public void _OnEventA() {
       // do something
    }

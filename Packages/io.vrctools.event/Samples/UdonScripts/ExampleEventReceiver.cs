@@ -15,6 +15,7 @@ using TMPro;
 using UdonSharp;
 using UnityEngine;
 using VRC.SDKBase;
+using VRCTools.Common.Attributes;
 
 namespace VRCTools.Event.Samples {
   [UdonBehaviourSyncMode(BehaviourSyncMode.None)]
@@ -71,6 +72,7 @@ namespace VRCTools.Event.Samples {
     /// Additionally, it may be advisable to prefix these methods with an underscore to prevent accidental (or malicious)
     /// invocation via the network.
     /// </summary>
+    [CustomEvent]
     public void _OnEvent() {
       this._eventCount++;
       this._text.text = this._eventCount.ToString();
