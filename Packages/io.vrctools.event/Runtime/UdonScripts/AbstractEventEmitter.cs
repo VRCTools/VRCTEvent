@@ -25,9 +25,10 @@ namespace VRCTools.Event
   /// </summary>
   public abstract class AbstractEventEmitter : UdonSharpBehaviour
   {
-    private bool _handlersInitialized;
-    private UdonSharpBehaviour[][] _handlers;
-    private string[][] _eventNames;
+    /// <summary>
+    /// Defines whether event emitter debug information shall be written to the game log.
+    /// </summary>
+    public bool eventEmitterDebugging;
 
     /// <summary>
     /// Retrieves the total number of events emitted by this emitter implementation.
@@ -49,6 +50,10 @@ namespace VRCTools.Event
     /// Identifies whether this emitter is currently updating its handlers for one of its events.
     /// </summary>
     public bool IsUpdatingHandlers => this.EventStackIndex > 0;
+
+    private bool _handlersInitialized;
+    private UdonSharpBehaviour[][] _handlers;
+    private string[][] _eventNames;
 
     /// <summary>
     /// Handles the initialization of the handler lists.
@@ -112,6 +117,8 @@ namespace VRCTools.Event
 
       this._handlers[eventId] = ArrayUtils.AddElement(handlerList, handler);
       this._eventNames[eventId] = ArrayUtils.AddElement(eventNames, eventName);
+
+      this._LogInfo($"Registered handler {handler.name}#{eventName} for event slot #{eventId}");
     }
 
     /// <summary>
@@ -165,6 +172,8 @@ namespace VRCTools.Event
 
         this._handlers[i] = handlerCopy;
         this._eventNames[i] = eventNameCopy;
+
+        this._LogInfo($"Cleaned up {removed} stale handlers from event slot #{i}");
       }
     }
 
@@ -196,6 +205,8 @@ namespace VRCTools.Event
         return;
       }
 
+      var handlerName = Utilities.IsValid(handler) ? handler.name : "???";
+      var totalRemoved = 0;
       for (var i = 0; i < this.EventCount; ++i)
       {
         var handlers = this._handlers[i];
@@ -221,6 +232,8 @@ namespace VRCTools.Event
           continue;
         }
 
+        totalRemoved += removed;
+
         var handlersCopy = new UdonSharpBehaviour[handlers.Length - removed];
         Array.Copy(handlers, handlersCopy, handlersCopy.Length);
 
@@ -229,6 +242,17 @@ namespace VRCTools.Event
 
         this._handlers[i] = handlersCopy;
         this._eventNames[i] = eventNamesCopy;
+
+        this._LogInfo($"Removed {removed} registrations for handler {handlerName} from event slot #{i}");
+      }
+
+      if (totalRemoved == 0)
+      {
+        this._LogWarn($"Could not find any registrations for handler {handlerName}");
+      }
+      else
+      {
+        this._LogInfo($"Removed {totalRemoved} registrations for handler {handlerName}");
       }
     }
 
@@ -269,10 +293,12 @@ namespace VRCTools.Event
         return;
       }
 
+      var handlerName = Utilities.IsValid(handler) ? handler.name : "???";
+
       if (this.EventStackIndex > 0)
       {
         UdonDebug.Error(handler,
-          $"Attempted to un-register handler {handler.name}#{eventName} for event slot {eventId} while event handler update is in progress");
+          $"Attempted to un-register handler {handlerName}#{eventName} for event slot {eventId} while event handler update is in progress");
         return;
       }
 
@@ -293,6 +319,8 @@ namespace VRCTools.Event
         // here
         if (location == -1)
         {
+          UdonDebug.Error(this,
+            $"Failed to unregister handler - No matching registration for {handlerName}#{eventName}");
           return;
         }
 
@@ -316,6 +344,8 @@ namespace VRCTools.Event
 
       this._handlers[eventId] = ArrayUtils.RemoveElement(handlerList, offset);
       this._eventNames[eventId] = ArrayUtils.RemoveElement(eventNames, offset);
+
+      this._LogInfo($"Unregistered {handlerName}#{eventName} from event slot #{eventId}");
     }
 
     /// <summary>
@@ -328,6 +358,11 @@ namespace VRCTools.Event
       // within this emitter yet
       if (!this._handlersInitialized)
       {
+        if (this.eventEmitterDebugging)
+        {
+          this._LogInfo($"No handlers have been registered - Emit for event slot #{eventId} has been skipped");
+        }
+
         return;
       }
 
@@ -342,6 +377,13 @@ namespace VRCTools.Event
         var handlerList = this._handlers[eventId];
         var eventNames = this._eventNames[eventId];
 
+        if (this.eventEmitterDebugging)
+        {
+          this._LogInfo(
+            $"Beginning emission for event slot #{eventId} at depth {this.EventStackIndex} (expecting {handlerList.Length} invocations)");
+        }
+
+        var invocations = 0;
         for (var i = 0; i < handlerList.Length; i++)
         {
           var handler = handlerList[i];
@@ -353,10 +395,45 @@ namespace VRCTools.Event
             continue;
           }
 
+          if (this.eventEmitterDebugging)
+          {
+            this._LogInfo(
+              $"Invoking handler {handler.name}#{eventName} for event slot #{eventId} at depth {this.EventStackIndex}");
+          }
+
           handler.SendCustomEvent(eventName);
+
+          invocations++;
+        }
+
+        if (this.eventEmitterDebugging)
+        {
+          this._LogInfo(
+            $"Completed emission for event slot #{eventId} at depth {this.EventStackIndex} (executed {invocations} handlers)");
         }
       }
       this.EventStackIndex--;
+    }
+
+    private void _LogInfo(string message)
+    {
+      if (!this.eventEmitterDebugging) return;
+
+      UdonDebug.Info(this, message);
+    }
+
+    private void _LogWarn(string message)
+    {
+      if (!this.eventEmitterDebugging) return;
+
+      UdonDebug.Warn(this, message);
+    }
+
+    private void _LogError(string message)
+    {
+      if (!this.eventEmitterDebugging) return;
+
+      UdonDebug.Error(this, message);
     }
   }
 }
