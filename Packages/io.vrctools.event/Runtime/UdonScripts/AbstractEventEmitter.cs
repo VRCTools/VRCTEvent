@@ -352,6 +352,7 @@ namespace VRCTools.Event
     /// Emits an event for the given event id.
     /// </summary>
     /// <param name="eventId">an event identifier as specified by the emitter implementation</param>
+    [RecursiveMethod]
     protected void _EmitEvent(int eventId)
     {
       // if the handler lists have not been initialized, there is nothing to be done as no handlers have been registered
