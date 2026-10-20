@@ -118,7 +118,7 @@ namespace VRCTools.Event
       this._handlers[eventId] = ArrayUtils.AddElement(handlerList, handler);
       this._eventNames[eventId] = ArrayUtils.AddElement(eventNames, eventName);
 
-      this._LogInfo($"Registered handler {handler.name}#{eventName} for event slot #{eventId}");
+      this._LogEmitterInfo($"Registered handler {handler.name}#{eventName} for event slot #{eventId}");
     }
 
     /// <summary>
@@ -173,7 +173,7 @@ namespace VRCTools.Event
         this._handlers[i] = handlerCopy;
         this._eventNames[i] = eventNameCopy;
 
-        this._LogInfo($"Cleaned up {removed} stale handlers from event slot #{i}");
+        this._LogEmitterInfo($"Cleaned up {removed} stale handlers from event slot #{i}");
       }
     }
 
@@ -243,16 +243,16 @@ namespace VRCTools.Event
         this._handlers[i] = handlersCopy;
         this._eventNames[i] = eventNamesCopy;
 
-        this._LogInfo($"Removed {removed} registrations for handler {handlerName} from event slot #{i}");
+        this._LogEmitterInfo($"Removed {removed} registrations for handler {handlerName} from event slot #{i}");
       }
 
       if (totalRemoved == 0)
       {
-        this._LogWarn($"Could not find any registrations for handler {handlerName}");
+        this._LogEmitterWarn($"Could not find any registrations for handler {handlerName}");
       }
       else
       {
-        this._LogInfo($"Removed {totalRemoved} registrations for handler {handlerName}");
+        this._LogEmitterInfo($"Removed {totalRemoved} registrations for handler {handlerName}");
       }
     }
 
@@ -345,7 +345,7 @@ namespace VRCTools.Event
       this._handlers[eventId] = ArrayUtils.RemoveElement(handlerList, offset);
       this._eventNames[eventId] = ArrayUtils.RemoveElement(eventNames, offset);
 
-      this._LogInfo($"Unregistered {handlerName}#{eventName} from event slot #{eventId}");
+      this._LogEmitterInfo($"Unregistered {handlerName}#{eventName} from event slot #{eventId}");
     }
 
     /// <summary>
@@ -361,7 +361,7 @@ namespace VRCTools.Event
       {
         if (this.eventEmitterDebugging)
         {
-          this._LogInfo($"No handlers have been registered - Emit for event slot #{eventId} has been skipped");
+          this._LogEmitterInfo($"No handlers have been registered - Emit for event slot #{eventId} has been skipped");
         }
 
         return;
@@ -380,7 +380,7 @@ namespace VRCTools.Event
 
         if (this.eventEmitterDebugging)
         {
-          this._LogInfo(
+          this._LogEmitterInfo(
             $"Beginning emission for event slot #{eventId} at depth {this.EventStackIndex} (expecting {handlerList.Length} invocations)");
         }
 
@@ -398,7 +398,7 @@ namespace VRCTools.Event
 
           if (this.eventEmitterDebugging)
           {
-            this._LogInfo(
+            this._LogEmitterInfo(
               $"Invoking handler {handler.name}#{eventName} for event slot #{eventId} at depth {this.EventStackIndex}");
           }
 
@@ -409,28 +409,28 @@ namespace VRCTools.Event
 
         if (this.eventEmitterDebugging)
         {
-          this._LogInfo(
+          this._LogEmitterInfo(
             $"Completed emission for event slot #{eventId} at depth {this.EventStackIndex} (executed {invocations} handlers)");
         }
       }
       this.EventStackIndex--;
     }
 
-    private void _LogInfo(string message)
+    private void _LogEmitterInfo(string message)
     {
       if (!this.eventEmitterDebugging) return;
 
       UdonDebug.Info(this, message);
     }
 
-    private void _LogWarn(string message)
+    private void _LogEmitterWarn(string message)
     {
       if (!this.eventEmitterDebugging) return;
 
       UdonDebug.Warn(this, message);
     }
 
-    private void _LogError(string message)
+    private void _LogEmitterError(string message)
     {
       if (!this.eventEmitterDebugging) return;
 
