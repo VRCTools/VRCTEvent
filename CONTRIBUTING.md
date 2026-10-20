@@ -76,6 +76,33 @@ Every package repository is a complete Unity project with the package itself loc
 - **Leave version numbers alone.** Releases (including the version in `package.json`) are handled by the
   maintainers.
 
+### Conventions
+
+- **Naming:**
+  - Booleans start with `Is` or `Has` (e.g. `IsStateInitialized`).
+  - Overridable hooks look like `_On...` (e.g. `_OnStateInitialized`).
+  - Public serialized fields use `camelCase`, private fields `_camelCase`, properties `PascalCase`.
+  - Extension classes are named `<Type>Extensions` (e.g. `UdonSharpBehaviourExtensions`).
+- **Prefix all public methods inside of `UdonSharpBehaviour` deriving classes with `_` unless they are invoked over
+  the network or are defined upstream.** This prevents these methods from accidentally being invoked via the network
+  through methods such as `SendCustomNetworkEvent`. 
+- **Annotate methods with the
+  [`VRCTools.Common.Attributes`](https://vrctools.io/docs/common/attributes/) that describe how they are used.** The
+  editor checks them whenever scripts are reloaded, so mistakes show up as warnings instead of methods that are
+  silently never invoked. Fix every `[Attribute Validator]` warning your change introduces before submitting it.
+  - `[EventHook]` on overridable hooks (`_On...`) whose base implementation is empty.
+  - `[MustCallBase]` on virtual methods whose overrides must call the base implementation, such as lifecycle methods
+    which keep internal state. The editor does not verify the base call itself, so check this when overriding.
+  - `[CustomEvent]` on methods invoked via `SendCustomEvent` or `SendCustomEventDelayedSeconds`.
+  - `[NetworkEvent]` (together with `[NetworkCallable]`) on methods invoked via `SendCustomNetworkEvent`.
+- **Logging should use `UdonDebug`.** Never invoke `Debug.Log` directly. This ensures the source of a log entry is
+  always clear to users.
+- **Synced behaviours should use `[UdonBehaviourSyncMode(BehaviourSyncMode.Manual)]` where possible.** This prevents
+  unnecessary network traffic since objects are only re-transmitted when explicitly needed (use 
+  `AbstractSynchronizedBehaviour` where possible to make use of its retry logic).
+- **Keep Update and related events light!** Udon is already slow as-is. We should try to be as efficient as possible
+  here. `SendCustomEventDelayedSeconds` may be a better choice in a lot of cases.
+
 ### Testing
 
 UdonSharp code only runs inside VRChat (or ClientSim), so please test your change before submitting it:
